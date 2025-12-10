@@ -70,7 +70,13 @@ export default function Page() {
 			console.log("Response status:", res.status);
 			const data = await res.json();
 			console.log("Response data:", data.error);
-			if (data.reply || data.error) {
+			if (data.reply) {
+				setMessages(prev => [
+					...prev,
+					{ role: "model", content: data.reply }
+				]);
+			}
+			if (data.error) {
 				setMessages(prev => [
 					...prev,
 					{ role: "model", content: data.error }
