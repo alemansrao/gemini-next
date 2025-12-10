@@ -132,7 +132,7 @@ export default function Page() {
 									<img
 										alt="Tailwind CSS chat bubble component"
 										className=""
-										src="./user-avatar.png"
+										src="./user.png"
 										//invert the colors of the image
 										style={{ filter: "invert(1)" }}
 									/>
