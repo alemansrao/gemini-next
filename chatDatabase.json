@@ -1,0 +1,30 @@
+[
+	{
+		"chatId": "1234",
+		"chatTitle": "Temp chat title",
+		"messages": [
+			{
+				"role": "user",
+				"content": "Hello"
+			},
+			{
+				"role": "assistant",
+				"content": "Hello"
+			}
+		]
+	},
+	{
+		"chatId": "12334",
+		"chatTitle": "Temp c33hat title2213",
+		"messages": [
+			{
+				"role": "user",
+				"content": "Hello"
+			},
+			{
+				"role": "assistant",
+				"content": "Hello"
+			}
+		]
+	}
+]
