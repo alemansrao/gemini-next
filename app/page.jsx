@@ -27,7 +27,7 @@ export default function Page() {
 	const messagesRef = useRef(null);
 	const [hasScrollbar, setHasScrollbar] = useState(false);
 	const [isAtTop, setIsAtTop] = useState(true);
-	const [chatTitle, setChatTitle] = useState("Sample Chat Title");
+	const [chatTitle, setChatTitle] = useState("");
 	const scrollToTop = () => {
 		helperScrollToTop(messagesRef.current, hasScrollbar, setIsAtTop);
 	};
@@ -40,7 +40,7 @@ export default function Page() {
 				headers: {
 					"Content-Type": "application/json",
 				},
-				body: JSON.stringify({ message,apiKey })
+				body: JSON.stringify({ message, apiKey })
 			});
 			if (!res.ok) {
 				const txt = await res.text();
@@ -182,30 +182,42 @@ export default function Page() {
 			{/* HEADER */}
 			<NavbarComponent chattitle={chatTitle} />
 			{ /* Render the scroll-to-top button only when a scrollbar exists AND we are not already at top */}
-			<div className="w-full font-bold bg-cyan-950 flex flex-row justify-between items-center text-content1 sm:hidden h-[4em] p-6 ">
-				<p>{chatTitle}</p>
+			{chatTitle && (
 				<AnimatePresence>
-					{hasScrollbar && !isAtTop && (
-						<motion.div
-							key="scroll-top"
-							initial={{ opacity: 0, y: 8 }}
-							animate={{ opacity: 1, y: 0 }}
-							exit={{ opacity: 0, y: -8 }}
-							transition={{ duration: 0.18 }}
-							className="flex items-center"
-						>
-							<CiCircleChevUp
-								className="cursor-pointer"
-								size={38}
-								title="Scroll to top"
-								role="button"
-								tabIndex={0}
-								onClick={scrollToTop}
-							/>
-						</motion.div>
-					)}
+					<motion.div
+						key="chat-header"
+						initial={{ opacity: 0, y: -20 }}
+						animate={{ opacity: 1, y: 0 }}
+						exit={{ opacity: 0, y: -20 }}
+						transition={{ duration: 0.3, ease: "easeOut" }}
+						className="w-full font-bold bg-cyan-950 flex flex-row justify-between items-center text-content1 sm:hidden h-[4em] p-6"
+					>
+						<p>{chatTitle}</p>
+						<AnimatePresence>
+							{hasScrollbar && !isAtTop && (
+								<motion.div
+									key="scroll-top"
+									initial={{ opacity: 0, y: 8 }}
+									animate={{ opacity: 1, y: 0 }}
+									exit={{ opacity: 0, y: -8 }}
+									transition={{ duration: 0.18 }}
+									className="flex items-center"
+								>
+									<CiCircleChevUp
+										className="cursor-pointer"
+										size={38}
+										title="Scroll to top"
+										role="button"
+										tabIndex={0}
+										onClick={scrollToTop}
+									/>
+								</motion.div>
+							)}
+						</AnimatePresence>
+					</motion.div>
 				</AnimatePresence>
-			</div>
+			)}
+
 			{/* CHAT AREA */}
 			<div ref={messagesRef} className="flex-1 overflow-y-auto space-y-4 px-2 md:px-24">
 				{messages.slice(1).map((msg, index) => (
@@ -246,9 +258,9 @@ export default function Page() {
 								animate={{ opacity: 1, x: 0, y: 0 }}
 
 
-								className={`chat-bubble rounded-4xl  min-w-min ${msg.role === "user"
-									? "bg-primary text-primary-content chat-bubble-info max-w-2/5 "
-									: "  text-black max-w-3/5 selection:bg-yellow-400  chat-bubble-info"
+								className={`chat-bubble rounded-4xl   ${msg.role === "user"
+									? "bg-primary text-primary-content chat-bubble-info max-w-4/5 md:max-w-3/5 "
+									: "  text-black max-w-4/5 md:max-w-3/5 selection:bg-yellow-400  chat-bubble-info wrap-anywhere"
 									}`}
 								transition={{ duration: 0.25 }}>
 								<ReactMarkdown>
@@ -284,8 +296,8 @@ export default function Page() {
 					maxRows={4}
 					placeholder="Enter your prompt..."
 					onKeyDown={(e) => {
-						// Trigger send on Ctrl+Enter (or Cmd+Enter on Mac) when there's input
-						if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+						//only send message on Enter without Shift
+						if (e.key === "Enter" && !e.shiftKey) {
 							e.preventDefault();
 							if (input.trim() && !loading) {
 								sendMessage();
