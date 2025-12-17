@@ -12,7 +12,7 @@ export async function POST(request) {
       return Response.json({ error: "messages must be a non-empty array" }, { status: 400 });
     }
 
-    const modelName = request.headers.get("x-gemini-model") || "gemini-2.5-flash";
+    const modelName = request.headers.get("x-gemini-model");// || "gemini-2.5-flash";
 
     // Initialize SDK
     const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
@@ -33,6 +33,6 @@ export async function POST(request) {
     return Response.json({ reply: response.text });
   } catch (err) {
     console.error("Internal error:", err);
-    return Response.json({ error: "Internal server error" }, { status: 500 });
+    return Response.json({ reply: "Internal server error" + err });
   }
 }
