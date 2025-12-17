@@ -222,11 +222,11 @@ export default function Page() {
 			<div ref={messagesRef} className="flex-1 overflow-y-auto space-y-4 px-2 md:px-24">
 				{messages.slice(1).map((msg, index) => (
 
-					<div key={index} className={`chat ${msg.role === "user" ? "chat-end" : "chat-start"
+					<div key={index} className={`chat gap-0 md:gap-1.5 ${msg.role === "user" ? "chat-end " : "chat-start"
 						}`}>
 						{msg.role === "model" && (
 							<div className="chat-image avatar">
-								<div className="w-10 rounded-full">
+								<div className="w-5 md:w-10 rounded-full">
 									<img
 										onClick={copyContent(msg.content)}
 										alt="Tailwind CSS chat bubble component"
@@ -237,7 +237,7 @@ export default function Page() {
 						)}
 						{msg.role === "user" && (
 							<div className="chat-image avatar">
-								<div className="w-10 rounded-full border border-white p-2">
+								<div className="w-5 md:w-10 rounded-full border border-white md:p-2 p-1">
 									<img
 										alt="Tailwind CSS chat bubble component"
 										className=""
@@ -258,18 +258,52 @@ export default function Page() {
 								animate={{ opacity: 1, x: 0, y: 0 }}
 
 
-								className={`chat-bubble rounded-4xl   ${msg.role === "user"
+								className={`chat-bubble wrap-break-word rounded-4xl   ${msg.role === "user"
 									? "bg-primary text-primary-content chat-bubble-info max-w-4/5 md:max-w-3/5 "
-									: "  text-black max-w-4/5 md:max-w-3/5 selection:bg-yellow-400  chat-bubble-info wrap-anywhere"
+									: "  text-black max-w-4/5 md:max-w-3/5 selection:bg-yellow-400  chat-bubble-info"
 									}`}
 								transition={{ duration: 0.25 }}>
 								<ReactMarkdown>
 									{msg.content}
 								</ReactMarkdown>
 								{/* </div> */}
-							</motion.div></AnimatePresence>
+							</motion.div>
+						</AnimatePresence>
+
 					</div>
 				))}
+				<AnimatePresence>
+					{
+						loading &&
+
+						<div className={`chat chat-start`}>
+							<div className="chat-image avatar">
+								<div className="w-10 rounded-full">
+									<img
+										alt="Tailwind CSS chat bubble component"
+										src="gemini_logo.png"
+									/>
+								</div>
+							</div>
+
+
+							<AnimatePresence>
+								<motion.div
+									//if role is user, animate from right, else from left
+									initial={{ opacity: 0, x: -50 }}
+									animate={{ opacity: 1, x: 0 }}
+									exit={{ opacity: 0, x: 50 }}
+
+
+									className={`chat-bubble rounded-4xl text-black max-w-4/5 md:max-w-3/5 selection:bg-yellow-400  chat-bubble-info wrap-anywhere`}
+									transition={{ duration: 0.25 }}>
+									Typing...
+								</motion.div>
+							</AnimatePresence>
+
+						</div>
+					}
+				</AnimatePresence>
 			</div>
 
 			{/* INPUT BAR */}
