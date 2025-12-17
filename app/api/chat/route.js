@@ -12,7 +12,7 @@ export async function POST(request) {
       return Response.json({ error: "messages must be a non-empty array" }, { status: 400 });
     }
 
-    const modelName = request.headers.get("x-gemini-model");// || "gemini-2.5-flash";
+    const modelName = "gemini-2.5-flash-lite";
 
     // Initialize SDK
     const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
