@@ -136,6 +136,9 @@ export async function POST(request) {
 
 
 
+      //log the request
+      console.log(`[${now()}] Request to Gemini API: ${JSON.stringify(loggedFetchOptions, null, 2)}`);
+
 
 
       response = await fetch(fetchUrl, fetchOptions);

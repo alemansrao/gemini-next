@@ -22,7 +22,7 @@ export async function POST(req) {
 
   const payload = {
     messages: [
-      { role: "system", content: systemPrompt },
+      { role: "model", content: systemPrompt },
       { role: "user", content: firstMessage },
     ],
   };
@@ -37,6 +37,13 @@ export async function POST(req) {
     };
 
     headers['x-gemini-model'] = 'gemini-2.5-flash-lite';
+    //logging the request
+    console.log("Chat API Request:");
+    console.log("URL:", chatUrl);
+    console.log("Headers:", headers);
+    console.log("Payload:", payload);
+
+
     const res = await fetch(chatUrl, {
       method: "POST",
       headers,
