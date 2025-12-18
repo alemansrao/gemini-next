@@ -269,7 +269,7 @@ export default function ChatView({ existingChatId = null }) {
 				<NavbarComponent chattitle={chatTitle} />
 
 				{/* Chat header (mobile) */}
-				
+
 
 				{/* Messages */}
 				<div
@@ -327,7 +327,14 @@ export default function ChatView({ existingChatId = null }) {
 						<div className="chat chat-start">
 							<div className="chat-image avatar">
 								<div className="w-10 rounded-full">
-									/gemini_logo.png
+									<img
+										onClick={() => {
+											navigator.clipboard.writeText(msg.content);
+											addToast({ title: 'Copied', color: 'success' });
+										}}
+										alt="assistant"
+										src="/gemini_logo.png"
+									/>
 								</div>
 							</div>
 							<div className="chat-bubble rounded-4xl text-content1 max-w-4/5 md:max-w-3/5 selection:bg-yellow-400">

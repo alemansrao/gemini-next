@@ -62,6 +62,12 @@ export async function POST(request) {
 				headers: { 'Content-Type': 'application/json' },
 			});
 		}
+		else if (err?.message === 'The model is overloaded. Please try again later.') {
+			return new Response(JSON.stringify({ reply: 'Model Overloaded' }), {
+				status: 200,
+				headers: { 'Content-Type': 'application/json' },
+			});
+		}
 		return Response.json(
 			{
 				error: 'Internal server error', details: String(err && err.message ? err.message : err)
