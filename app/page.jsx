@@ -15,13 +15,14 @@ import {
 	setupResizeObserver,
 	scrollToTop as helperScrollToTop,
 	DEFAULT_MESSAGES,
-	API_KEY_STORAGE_KEY
+	API_KEY_STORAGE_KEY, MODEL_STORAGE_KEY
 } from "./helpers/chatHelpers";
 
 export default function Page() {
 	const router = useRouter();
 	const [messages, setMessages] = useState(DEFAULT_MESSAGES);
 	const [input, setInput] = useState("");
+	const [model, setModel] = useState("gemini-2.5-flash");
 	const [firstMessageSent, setFirstMessageSent] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const messagesRef = useRef(null);
@@ -90,6 +91,7 @@ export default function Page() {
 	}, []);
 
 	const sendMessage = async () => {
+		const geminiModel = typeof window !== "undefined" ? localStorage.getItem(MODEL_STORAGE_KEY) : 'gemini-2.5-flash-lite';
 		if (!firstMessageSent) {
 			// mark as sent immediately so we don't block subsequent sends
 			setFirstMessageSent(true);
@@ -135,13 +137,14 @@ export default function Page() {
 
 		try {
 			console.log("Sending messages:", newMessages);
+			console.log("geminiModel : ", geminiModel);
 			const res = await fetch("/api/chat", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
 					"x-gemini-api-key": cat
 				},
-				body: JSON.stringify({ messages: newMessages })
+				body: JSON.stringify({ messages: newMessages, model: geminiModel })
 			});
 			console.log("Response status:", res.status);
 			const data = await res.json();

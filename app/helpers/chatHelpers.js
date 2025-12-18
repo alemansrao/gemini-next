@@ -1,5 +1,6 @@
 // Constants
 export const API_KEY_STORAGE_KEY = "geminiApiKey";
+export const MODEL_STORAGE_KEY = "geminiModel";
 
 export const DEFAULT_MESSAGES = [
 	{

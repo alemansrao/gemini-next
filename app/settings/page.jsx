@@ -9,27 +9,35 @@ import NavbarComponent from "../components/Navbar";
 export default function SettingsPage() {
   const router = useRouter();
 
-  // Keep the initial value identical on server and client to avoid hydration mismatch.
-  // Read localStorage only after mount.
   const [apiKey, setApiKey] = useState("");
+  const [systemPrompt, setSystemPrompt] = useState("");
+  const [selectedModel, setSelectedModel] = useState("gemini-2.5-flash-lite"); // Default model
   const [mounted, setMounted] = useState(false);
 
+  // Load data from localStorage on mount
   useEffect(() => {
-    const stored = localStorage.getItem("geminiApiKey") || "";
-    setApiKey(stored);
+    const storedApiKey = localStorage.getItem("geminiApiKey") || "";
+    setApiKey(storedApiKey);
+
+    const storedSystemPrompt = localStorage.getItem("systemPrompt") || "";
+    setSystemPrompt(storedSystemPrompt);
+
+    const storedSelectedModel = localStorage.getItem("selectedModel") || "gemini-2.5-flash-lite";
+    setSelectedModel(storedSelectedModel);
+
     setMounted(true);
   }, []);
 
-  const onChange = (e) => {
-    const v = e.target.value;
-    setApiKey(v);
-    // update immediately in localStorage
+  // Handlers for API Key
+  const handleApiKeyChange = (e) => {
+    const value = e.target.value;
+    setApiKey(value);
     if (typeof window !== "undefined") {
-      localStorage.setItem("geminiApiKey", v);
+      localStorage.setItem("geminiApiKey", value);
     }
   };
 
-  const onSaveClick = () => {
+  const handleSaveApiKey = () => {
     addToast({
       title: "API Key Saved",
       color: "success",
@@ -37,7 +45,7 @@ export default function SettingsPage() {
     });
   };
 
-  const onClear = () => {
+  const handleClearApiKey = () => {
     setApiKey("");
     if (typeof window !== "undefined") {
       localStorage.removeItem("geminiApiKey");
@@ -49,118 +57,149 @@ export default function SettingsPage() {
     });
   };
 
-  return (
+  // Handlers for System Prompt
+  const handleSystemPromptChange = (e) => {
+    const value = e.target.value;
+    setSystemPrompt(value);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("systemPrompt", value);
+    }
+  };
 
+  const handleTestPrompt = () => {
+    // Placeholder for actual prompt testing logic
+    addToast({
+      title: "Prompt Test Initiated",
+      color: "success",
+      description: "This feature is under development.",
+    });
+  };
+
+  const handleClearPrompt = () => {
+    setSystemPrompt("");
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("systemPrompt");
+    }
+    addToast({
+      title: "System Prompt Cleared",
+      color: "warning",
+      description: "System prompt cleared from local storage.",
+    });
+  };
+
+  // Handlers for Model Configuration
+  const handleModelChange = (e) => {
+    const value = e.target.value;
+    setSelectedModel(value);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("selectedModel", value);
+    }
+  };
+
+  const handleApplyModelConfig = () => {
+    addToast({
+      title: "Model Configuration Applied",
+      color: "success",
+      description: "Your model settings have been updated.",
+    });
+  };
+
+  const handleResetModelConfig = () => {
+    setSelectedModel("gemini-pro"); // Reset to default
+    if (typeof window !== "undefined") {
+      localStorage.setItem("selectedModel", "gemini-pro");
+    }
+    addToast({
+      title: "Model Configuration Reset",
+      color: "warning",
+      description: "Model settings have been reset to default.",
+    });
+  };
+
+  return (
     <>
       <NavbarComponent />
-      <div className="grid grid-cols-2 grid-rows-2 gap-2 h-[calc(100vh-4em)] p-8 bg-base-200 justify-between">
-        <div className="row-span-2">
-          <div className="flex flex-col h-full bg-base-100 rounded-2xl p-6 gap-3">
-
-
-            <div className="header flex flex-row h-12 rounded-2xl  justify-between ">
-              <div className="w-fit h-full align-middle flex flex-col text-2xl font-semibold">
-                System Prompt
-            <p className="text-sm text-base-content/60">Set your system prompt to tailor fit model responses according to your requirements.</p>
+      <div className="p-8 bg-base-200 min-h-screen">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-7xl mx-auto">
+          {/* System Prompt Section */}
+          <div className="lg:col-span-1 row-span-1 lg:row-span-2 flex flex-col">
+            <Card className="flex-1 bg-base-100 rounded-xl p-6 flex flex-col gap-4">
+              <div className="flex justify-between items-center">
+                <div className="flex flex-col">
+                  <h3 className="text-2xl font-semibold">System Prompt</h3>
+                  <p className="text-sm text-base-content/60">
+                    Set your system prompt to tailor fit model responses according to your requirements.
+                  </p>
+                </div>
+                <TbPrompt size={32} className="text-primary" />
               </div>
-              <div className="w-fit h-full align-middle flex items-center font-semibold">
-                <TbPrompt size={24} />
+              <div className="grow">
+                <Textarea
+                  placeholder="Enter your system prompt here..."
+                  value={systemPrompt}
+                  onChange={handleSystemPromptChange}
+                  className="w-full h-full resize-none rounded-lg p-4"
+                />
               </div>
-            </div>
+              <div className="flex flex-row gap-3">
+                <Button onPress={handleTestPrompt} className="btn-primary">Test Prompt</Button>
+                <Button onPress={handleClearPrompt} className="btn-outline">Clear Prompt</Button>
+              </div>
+            </Card>
+          </div>
 
-            <div className="flex h-full">
-              <textarea name="" id="" className="w-full h-full bg-base-300 p-3 resize-none rounded-2xl">
+          {/* API Key Settings Section (Top Card) */}
+          <div className="lg:col-span-1 row-span-1">
+            <Card className="w-full bg-base-100 rounded-xl p-6">
+              <h2 className="text-2xl font-semibold mb-4">API Key Settings</h2>
+              <p className="text-sm text-base-content/60 mb-6">
+                Set your Gemini API key below. This value is stored locally in your browser.
+              </p>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Gemini API Key</label>
+                <Input
+                  placeholder="Enter Gemini API key"
+                  value={apiKey}
+                  onChange={handleApiKeyChange}
+                  className="w-full text-black"
+                  type="password" // Mask the API key
+                />
+              </div>
+              <div className="flex gap-3">
+                <Button onPress={handleSaveApiKey} className="btn-primary" disabled={!mounted}>
+                  Save
+                </Button>
+                <Button onPress={handleClearApiKey} color="danger" className="btn-outline" disabled={!mounted}>
+                  Clear
+                </Button>
+              </div>
+            </Card>
+          </div>
 
-              </textarea>
-            </div>
-
-            <div className="flex flex-row gap-3">
-              <Button>Test</Button>
-              <Button>Test</Button>
-            </div>
-
-
-
-
-
-
+          {/* Model Configuration Section (Bottom Card) */}
+          <div className="lg:col-span-1 row-span-1">
+            <Card className="w-full bg-base-100 rounded-xl p-6">
+              <h2 className="text-2xl font-semibold mb-4">Model Configuration</h2>
+              <p className="text-sm text-base-content/60 mb-6">
+                Configure your preferred model and its parameters.
+              </p>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Select Model</label>
+                <Input
+                  placeholder="e.g., gemini-pro"
+                  value={selectedModel}
+                  onChange={handleModelChange}
+                  className="w-full text-content1"
+                />
+              </div>
+              <div className="flex gap-3">
+                <Button onPress={handleApplyModelConfig} className="btn-primary">Apply</Button>
+                <Button onPress={handleResetModelConfig} className="btn-outline">Reset</Button>
+              </div>
+            </Card>
           </div>
         </div>
-        <div className="col-start-2  row-start-1">    <Card className="w-full h-full max-w-2xl p-6 bg-base-100">
-          <h2 className="text-2xl font-semibold mb-4">Settings</h2>
-          <p className="text-sm text-base-content/60 mb-4">
-            Set your Gemini API key below. This value is stored locally in your browser.
-          </p>
-
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-2">Gemini API Key</label>
-            {/* Render with same initial markup as server (empty string). After mount the value will be populated. */}
-            <Input
-              placeholder="Enter Gemini API key"
-              value={apiKey}
-              onChange={onChange}
-              className="w-full text-black"
-            />
-          </div>
-
-          <div className="flex gap-3">
-            <Button onClick={onSaveClick} className="btn-primary" disabled={!mounted}>
-              Save
-            </Button>
-            <Button onClick={onClear} color="danger" className="btn-outline" disabled={!mounted}>
-              Clear
-            </Button>
-          </div>
-        </Card></div>
-        <div className="col-start-2 h-full row-start-2"><Card className="h-full w-full max-w-2xl p-6 bg-base-100">
-          <h2 className="text-2xl font-semibold mb-4">Settings</h2>
-          <p className="text-sm text-base-content/60 mb-4">
-            Set your Gemini API key below. This value is stored locally in your browser.
-          </p>
-
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-2">Gemini API Key</label>
-            {/* Render with same initial markup as server (empty string). After mount the value will be populated. */}
-            <Input
-              placeholder="Enter Gemini API key"
-              value={apiKey}
-              onChange={onChange}
-              className="w-full text-black"
-            />
-          </div>
-
-          <div className="flex gap-3">
-            <Button onClick={onSaveClick} className="btn-primary" disabled={!mounted}>
-              Save
-            </Button>
-            <Button onClick={onClear} color="danger" className="btn-outline" disabled={!mounted}>
-              Clear
-            </Button>
-          </div>
-        </Card></div>
       </div>
     </>
-
-    // <div className="flex flex-col h-screen bg-base-200">
-    //   {/* HEADER */}
-    //   {/* <div className="flex flex-row items-center justify-between p-4 bg-base-100 border-b border-base-300">
-
-    // 		<Link href="/" className="btn btn-ghost btn-sm ml-4"><Image
-    // 			src="/gemini.png"
-    // 			alt="Gemini Logo"
-    // 			width={100}
-    // 			height={50}
-    // 		/></Link>
-    // 		<Link href="/settings" className="btn btn-ghost btn-sm ml-4">Settings</Link>
-    // 	</div>
-    //    */}
-
-
-    //   {/* SETTINGS CONTENT */}
-    //   <div className="flex-1 flex flex-col md:flex-row items-start justify-center p-8 gap-2">
-
-
-    //   </div>
-    // </div>
   );
 }
