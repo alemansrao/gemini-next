@@ -4,7 +4,7 @@
 'use client';
 import { Card, CardHeader, CardBody, CardFooter, Divider, Link, Image } from "@heroui/react";
 import { useEffect, useState } from 'react';
-import { listChats, deleteChat, deleteAllChats } from '../lib/db';
+import { listChats, deleteChat, deleteAllChats, deleteNoTitleChats } from '../lib/db';
 import { useRouter } from 'next/navigation';
 import { addToast, Button, Input, Spinner } from '@heroui/react';
 import { MdAdd, MdDelete, MdSettings } from 'react-icons/md';
@@ -58,7 +58,13 @@ export default function Sidebar({ currentChatId }) {
 					<>
 						<Card className={`max-w-[400px] dark cursor-pointer`}>
 							<CardHeader className="flex  gap-3 justify-end">
-								<Button className="opacity-60 hover:opacity-100 p-1 px-3 hover:bg-zinc-200 rounded-3xl bg-zinc-700 hover:text-danger">Testing</Button>
+								<Button
+									onPress={async () => {
+										deleteNoTitleChats();
+
+										addToast({ title: 'Deleted all empty chats', color: 'danger' });
+									}}
+									className="opacity-60 hover:opacity-100 p-1 px-3 hover:bg-zinc-200 rounded-3xl bg-zinc-700 hover:text-danger">Testing</Button>
 								<Button
 									className="opacity-60 hover:opacity-100 p-1 px-3 hover:bg-zinc-200 rounded-3xl bg-zinc-700 hover:text-danger"
 									onPress={async () => {

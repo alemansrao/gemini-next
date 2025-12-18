@@ -166,3 +166,16 @@ export async function deleteAllChats() {
   }
 }
 
+//function to delete chats with no title
+export async function deleteNoTitleChats() {
+  const db = getDB();
+  if (db) {
+    const chats = await db.chats.toArray();
+    for (const chat of chats) {
+      if (!chat.title) {
+        await deleteChat(chat.id);
+      }
+    }
+  }
+}
+
