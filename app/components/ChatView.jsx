@@ -313,7 +313,7 @@ export default function ChatView({ existingChatId = null }) {
 							)}
 
 							<div
-								className={`chat-bubble rounded-4xl ${msg.role === 'user'
+								className={`chat-bubble rounded-4xl whitespace-pre-wrap ${msg.role === 'user'
 									? 'bg-primary text-primary-content max-w-4/5 md:max-w-3/5'
 									: 'text-content1 max-w-4/5 md:max-w-3/5 selection:bg-yellow-400'
 									}`}
