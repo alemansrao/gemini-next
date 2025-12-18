@@ -1,43 +1,72 @@
-import { GoogleGenAI } from "@google/genai";
+
+// Chat API using @google/genai
+// /app/api/chat/route.js
+import { GoogleGenAI } from '@google/genai';
 
 export async function POST(request) {
-  try {
-    const GEMINI_API_KEY = request.headers.get("x-gemini-api-key");
-    if (!GEMINI_API_KEY) {
-      return Response.json({ error: "API key missing" }, { status: 401 });
-    }
+	try {
+		const apiKey = request.headers.get('x-gemini-api-key');
+		if (!apiKey) {
+			return Response.json({ error: 'API key missing' }, { status: 401 });
+		}
 
-    const { messages, model } = await request.json();
-    if (!Array.isArray(messages) || messages.length === 0) {
-      return Response.json({ error: "messages must be a non-empty array" }, { status: 400 });
-    }
+		const body = await request.json().catch(() => null);
+		if (!body || !Array.isArray(body.messages) || body.messages.length === 0) {
+			return Response.json({ error: 'messages must be a non-empty array' }, { status: 400 });
+		}
+		console.log('Received model from browser:', body.model);
+		const modelName = String(body.model || 'gemini-2.5-flash');
+		const systemPrompt = typeof body.systemPrompt === 'string' ? body.systemPrompt.trim() : '';
 
-    const modelName = model || "gemini-2.5-flash-lite";
-    console.log("chat/Route.js Using model:", modelName);
-    // Initialize SDK
-    const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+		const ai = new GoogleGenAI({ apiKey });
 
-    // Create chat session
-    const chat = ai.chats.create({
-      model: modelName,
-      history: messages.map(msg => ({
-        role: msg.role,
-        parts: [{ text: msg.content }],
-      })),
-    });
+		// Prepare history (role: 'user' | 'model')
+		const history = body.messages.map((m) => ({
+			role: m.role,
+			parts: [{ text: String(m.content ?? '') }],
+		}));
 
-    // Send last message
-    const lastMessage = messages[messages.length - 1].content;
-    //add fake delay if environment variable ENVIRONMENT is found
-    if (process.env.ENVIRONMENT) {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-    }
+		// Create chat session (optionally attach system instruction through config)
+		console.log('Creating chat session with model:', modelName);
+		const chat = ai.chats.create({
+			model: modelName,
+			config: systemPrompt ? { systemInstruction: systemPrompt } : undefined,
+			history,
+		});
 
-    const response = await chat.sendMessage({ message: lastMessage });
+		// Optional fake delay for demo parity
+		if (process.env.ENVIRONMENT) {
+			await new Promise((res) => setTimeout(res, 800));
+		}
 
-    return Response.json({ reply: response.text });
-  } catch (err) {
-    console.error("Internal error:", err);
-    return Response.json({ reply: "Internal server error" + err });
-  }
+		// Use the last user message as the "sendMessage" payload
+		const last = body.messages[body.messages.length - 1];
+		const lastText = String(last?.content ?? '').trim();
+		if (!lastText) {
+			return Response.json({ error: 'Last message content is empty' }, { status: 400 });
+		}
+
+		const response = await chat.sendMessage({ message: lastText });
+		const reply = (response?.text || '').toString();
+
+		if (!reply) {
+			return Response.json({ error: 'Empty response from model' }, { status: 502 });
+		}
+
+		return Response.json({ reply });
+	} catch (err) {
+		console.error('Internal error:', err);
+		if (err?.message === 'exception TypeError: fetch failed sending request') {
+			return new Response(JSON.stringify({ reply: 'Testing reply' }), {
+				status: 200,
+				headers: { 'Content-Type': 'application/json' },
+			});
+		}
+		return Response.json(
+			{
+				error: 'Internal server error', details: String(err && err.message ? err.message : err)
+			},
+			{ status: 500 },
+		);
+	}
 }

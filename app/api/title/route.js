@@ -1,87 +1,73 @@
+
+// Title generation API (fast & cheap)
+// /app/api/title/route.js
+import { GoogleGenAI } from '@google/genai';
+
 export async function POST(req) {
-  // Read incoming body  { message }
-  let body;
-  try {
-    body = await req.json();
-  } catch {
-    body = {};
-  }
+	try {
+		const body = await req.json().catch(() => ({}));
+		const firstMessage = (body?.message || '').toString().trim();
 
-  const firstMessage = body.message;
-
-
-  if (!firstMessage) {
-    return new Response(JSON.stringify({ error: "First message is required" }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-
-  const systemPrompt =
-    "You are to act as a generator for chat titles. The user will send a query - you must generate a title for the chat based on it. Only reply with the short title, nothing else.";
-
-  const payload = {
-    messages: [
-      { role: "model", content: systemPrompt },
-      { role: "user", content: firstMessage },
-    ],
-  };
-
-  try {
-    const chatUrl = new URL("/api/chat", req.url).toString();
-    const headers = { "Content-Type": "application/json" };
-
-    // forward apiKey if provided (optional)
-    if (body.apiKey) {
-      headers["x-gemini-api-key"] = body.apiKey;
-    };
-
-    headers['x-gemini-model'] = 'gemini-2.5-flash-lite';
-    //logging the request
-    console.log("Chat API Request:");
-    console.log("URL:", chatUrl);
-    console.log("Headers:", headers);
-    console.log("Payload:", payload);
+		if (process.env.NODE_ENV === 'development') {
+			return new Response(JSON.stringify({ title: firstMessage }), {
+				status: 200,
+				headers: { 'Content-Type': 'application/json' },
+			});
+		}
 
 
-    const res = await fetch(chatUrl, {
-      method: "POST",
-      headers,
-      body: JSON.stringify(payload),
-    });
+		if (!firstMessage) {
+			return new Response(JSON.stringify({ error: 'First message is required' }), {
+				status: 400,
+				headers: { 'Content-Type': 'application/json' },
+			});
+		}
 
-    if (!res.ok) {
-      const txt = await res.text().catch(() => "");
-      return new Response(JSON.stringify({ error: "Upstream chat API error", details: txt }), {
-        status: 502,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
+		const apiKey = body.apiKey || '';
+		if (!apiKey) {
+			// Do not attempt unauthenticated call; fallback in client will handle it.
+			return new Response(JSON.stringify({ error: 'API key missing for title' }), {
+				status: 401,
+				headers: { 'Content-Type': 'application/json' },
+			});
+		}
 
-    const data = await res.json().catch(() => null);
+		const ai = new GoogleGenAI({ apiKey });
+		const model = body.model || 'gemini-2.5-flash-lite'; // fast, cheap
+		const systemInstruction =
+			'You are a title generator. Respond with a concise, 4-8 word title for the user message. No punctuation, no quotes.';
 
-    // Try common response shapes to extract assistant text
-    let assistantReply = data.reply || "New Chat";
+		const response = await ai.models.generateContent({
+			model,
+			contents: [{ role: 'user', parts: [{ text: firstMessage }] }],
+			config: { systemInstruction },
+		});
 
-    if (!assistantReply && typeof data === "string") assistantReply = data;
+		let title = (response?.text || '').toString().trim();
+		if (!title) {
+			return new Response(JSON.stringify({ error: 'No title returned from model' }), {
+				status: 502,
+				headers: { 'Content-Type': 'application/json' },
+			});
+		}
 
-    if (!assistantReply) {
-      return new Response(JSON.stringify({ error: "No title returned from chat API" }), {
-        status: 502,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
+		// Keep it short and single line
+		title = title = title.split('\n')[0].replace(/^["'\[] | ["'\]]$/g, '').slice(0, 60).trim();
 
-    assistantReply = String(assistantReply).trim().split("\n")[0].replace(/^["']|["']$/g, "").trim();
-
-    return new Response(JSON.stringify({ title: assistantReply }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
-  } catch (err) {
-    return new Response(JSON.stringify({ error: "Internal error", details: String(err) }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
+		return new Response(JSON.stringify({ title }), {
+			status: 200,
+			headers: { 'Content-Type': 'application/json' },
+		});
+	} catch (err) {
+		// if (err?.message === 'exception TypeError: fetch failed sending request') {
+		// 	return new Response(JSON.stringify({ title: 'Testing' }), {
+		// 		status: 200,
+		// 		headers: { 'Content-Type': 'application/json' },
+		// 	});
+		// }
+		return new Response(
+			JSON.stringify({ error: 'Internal error', details: String(err && err.message ? err.message : err) }),
+			{ status: 500, headers: { 'Content-Type': 'application/json' } },
+		);
+	}
 }
