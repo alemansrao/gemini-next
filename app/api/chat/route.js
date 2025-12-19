@@ -5,19 +5,28 @@ import { GoogleGenAI } from '@google/genai';
 
 export async function POST(request) {
 	try {
+		//get apiKey from request header
 		const apiKey = request.headers.get('x-gemini-api-key');
+
+		//if no api key then return error as response
 		if (!apiKey) {
 			return Response.json({ error: 'API key missing' }, { status: 401 });
 		}
 
+		//get request body
 		const body = await request.json().catch(() => null);
+
 		if (!body || !Array.isArray(body.messages) || body.messages.length === 0) {
 			return Response.json({ error: 'messages must be a non-empty array' }, { status: 400 });
 		}
-		console.log('Received model from browser:', body.model);
-		const modelName = String(body.model || 'gemini-2.5-flash');
+
+		//get model name from request body, if not provided, default to 'gemini-2.5-flash-lite'
+		const modelName = String(body.model || 'gemini-2.5-flash-lite');
+
+		//get system prompt from request body, if not provided, default to ''
 		const systemPrompt = typeof body.systemPrompt === 'string' ? body.systemPrompt.trim() : '';
 
+		//create a new instance of GoogleGenAI
 		const ai = new GoogleGenAI({ apiKey });
 
 		// Prepare history (role: 'user' | 'model')
@@ -34,7 +43,7 @@ export async function POST(request) {
 			history,
 		});
 
-		// Optional fake delay for demo parity
+		// Optional fake delay for demo parity in development environment
 		if (process.env.ENVIRONMENT) {
 			await new Promise((res) => setTimeout(res, 800));
 		}
@@ -46,6 +55,7 @@ export async function POST(request) {
 			return Response.json({ error: 'Last message content is empty' }, { status: 400 });
 		}
 
+		//send message and get response
 		const response = await chat.sendMessage({ message: lastText });
 		const reply = (response?.text || '').toString();
 
