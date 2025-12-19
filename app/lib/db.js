@@ -150,29 +150,25 @@ export async function listChats() {
 }
 
 
-export async function deleteAllChats() {
-  const db = getDB();
-
-  if (db) {
-    // Dexie: clear both tables in a single transaction
-    await db.transaction('rw', db.chats, db.messages, async () => {
-      await db.messages.clear();
-      await db.chats.clear();
-    });
-  } else {
-    // localStorage fallback: reset both stores
-    lsWrite(LS_CHATS, {});
-    lsWrite(LS_MESSAGES, {});
-  }
-}
-
-//function to delete chats with no title
-export async function deleteNoTitleChats() {
+export async function deleteAllChats(currentChatId) {
   const db = getDB();
   if (db) {
     const chats = await db.chats.toArray();
     for (const chat of chats) {
-      if (!chat.title) {
+      if (chat.id !== currentChatId) {
+        await deleteChat(chat.id);
+      }
+    }
+  }
+}
+
+//function to delete chats with no title except the one with currentChatId
+export async function deleteNoTitleChats(currentChatId) {
+  const db = getDB();
+  if (db) {
+    const chats = await db.chats.toArray();
+    for (const chat of chats) {
+      if (!chat.title && chat.id !== currentChatId) {
         await deleteChat(chat.id);
       }
     }
