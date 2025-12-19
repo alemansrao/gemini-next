@@ -51,7 +51,7 @@ export default function Sidebar({ currentChatId }) {
 				/>
 			</div>
 
-			<div className="flex-1 overflow-y-auto">
+			<div className="flex-1 overflow-y-auto ">
 				{!chats ? (
 					<div className="flex items-center justify-center h-full">
 						<Spinner size="sm" color="default" />
@@ -96,15 +96,19 @@ export default function Sidebar({ currentChatId }) {
 							</CardHeader>
 						</Card>
 						{filtered.map((chat) => (
-							<Card key={chat.id} className={`max-w-[400px] dark cursor-pointer  ${chat.id === currentChatId ? 'bg-primary/20' : 'hover:bg-gray-800'}`}>
+							<Card key={chat.id} className={`max-w-[400px] dark cursor-pointer rounded-none  ${chat.id === currentChatId ? 'bg-primary/20' : 'hover:bg-gray-800'}`}>
 								<CardHeader className="flex gap-3 justify-between " onClick={() => router.push(`/chat/${chat.id}`)}>
 									<div className="flex flex-col">
-										<p className="text-md">{chat.title.slice(0, 25).trim() || 'New chat'}</p>
-										<p className="text-small text-default-500">{new Date(chat.updatedAt).toLocaleString()}</p>
+										<p className="text-md">
+											{chat.title.slice(0, 25).trim() || 'New chat'}
+										</p>
+										<p className="text-gray-500 text-xs ">
+											{new Date(chat.updatedAt).toLocaleString()}
+										</p>
 									</div>
 									{chat.id != currentChatId && (<Dropdown className="dark">
-										<DropdownTrigger>
-											<HiOutlineDotsVertical />
+										<DropdownTrigger className="hover:bg-gray-700 rounded-full w-10 h-10">
+											<HiOutlineDotsVertical size={12} className="p-3" />
 										</DropdownTrigger>
 										<DropdownMenu aria-label="Static Actions" >
 											<DropdownItem key="delete" className="text-danger" color="danger"
