@@ -138,11 +138,17 @@ export default function SettingsPage() {
                   placeholder="Enter your system prompt here..."
                   value={systemPrompt}
                   onChange={handleSystemPromptChange}
-                  className="w-full h-full resize-none rounded-lg p-4"
+                  className="w-full h-full resize-none rounded-lg p-4 text-black"
                 />
               </div>
               <div className="flex flex-row gap-3">
-                <Button onPress={handleTestPrompt} className="btn-primary">Test Prompt</Button>
+                <Button onPress={() => {
+                  addToast({
+                    title: "System Prompt Saved",
+                    color: "success",
+                    description: "System prompt saved to local storage.",
+                  })
+                }} className="btn-primary">Save Prompt</Button>
                 <Button onPress={handleClearPrompt} className="btn-outline">Clear Prompt</Button>
               </div>
             </Card>
