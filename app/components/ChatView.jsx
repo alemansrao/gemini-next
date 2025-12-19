@@ -50,8 +50,6 @@ export default function ChatView({ existingChatId = null }) {
 	const [model, setModel] = useState(initialModel);
 
 	const messagesRef = useRef(null);
-	const [hasScrollbar, setHasScrollbar] = useState(false);
-	const [isAtTop, setIsAtTop] = useState(true);
 
 	// Guard to prevent duplicate initialization in Strict Mode
 	const initRef = useRef(null);
@@ -115,38 +113,10 @@ export default function ChatView({ existingChatId = null }) {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [existingChatId]);
 
-	// --- Scrolling after messages change ---
-	useEffect(() => {
-		if (messagesRef.current) {
-			setTimeout(() => {
-				messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
-				updateHasScrollbar(messagesRef.current, setHasScrollbar, setIsAtTop);
-			}, 0);
-		}
-	}, [messages]);
 
-	// --- Layout observers ---
-	useEffect(() => {
-		const el = messagesRef.current;
-		if (!el) return;
 
-		const resizeCb = () => updateHasScrollbar(el, setHasScrollbar, setIsAtTop);
-		const onScroll = createScrollHandler(el, setIsAtTop);
 
-		const ro = setupResizeObserver(el, resizeCb);
-		el.addEventListener('scroll', onScroll);
-		window.addEventListener('resize', resizeCb);
 
-		return () => {
-			el.removeEventListener('scroll', onScroll);
-			if (ro?.disconnect) ro.disconnect();
-			window.removeEventListener('resize', resizeCb);
-		};
-	}, []);
-
-	function scrollToTop() {
-		helperScrollToTop(messagesRef.current, hasScrollbar, setIsAtTop);
-	}
 
 	async function fetchChatTitle(apiKey, message) {
 		try {
@@ -273,7 +243,6 @@ export default function ChatView({ existingChatId = null }) {
 
 				{/* Messages */}
 				<div
-					ref={messagesRef}
 					className="flex-1 overflow-y-auto space-y-4 px-3 md:px-10 py-3"
 				>
 					{displayedMessages.map((msg, index) => (
