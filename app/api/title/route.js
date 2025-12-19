@@ -52,6 +52,7 @@ export async function POST(req) {
 		}
 
 		// Keep it short and single line
+		// Here we are removing the quotes and brackets from the title
 		title = title = title.split('\n')[0].replace(/^["'\[] | ["'\]]$/g, '').slice(0, 60).trim();
 
 		return new Response(JSON.stringify({ title }), {
@@ -59,12 +60,6 @@ export async function POST(req) {
 			headers: { 'Content-Type': 'application/json' },
 		});
 	} catch (err) {
-		// if (err?.message === 'exception TypeError: fetch failed sending request') {
-		// 	return new Response(JSON.stringify({ title: 'Testing' }), {
-		// 		status: 200,
-		// 		headers: { 'Content-Type': 'application/json' },
-		// 	});
-		// }
 		return new Response(
 			JSON.stringify({ error: 'Internal error', details: String(err && err.message ? err.message : err) }),
 			{ status: 500, headers: { 'Content-Type': 'application/json' } },
