@@ -49,7 +49,18 @@ export default function ChatView({ existingChatId = null }) {
 		isBrowser ? localStorage.getItem(MODEL_STORAGE_KEY) ?? 'gemini-2.5-flash' : 'gemini-2.5-flash';
 	const [model, setModel] = useState(initialModel);
 
-	const messagesRef = useRef(null);
+
+	// Inside your component:
+	const messagesEndRef = useRef(null);
+
+	const scrollToBottom = () => {
+		messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+	};
+
+	useEffect(() => {
+		scrollToBottom();
+	}, [messages]); // Triggers every time messages change
+
 
 	// Guard to prevent duplicate initialization in Strict Mode
 	const initRef = useRef(null);
@@ -225,9 +236,6 @@ export default function ChatView({ existingChatId = null }) {
 		}
 	}
 
-	// Hide the first message only if it's the seeded "system" message
-	const displayedMessages =
-		messages[0]?.role === 'system' ? messages.slice(1) : messages;
 
 	return (
 		<div className="flex h-screen bg-base-200">
@@ -245,7 +253,7 @@ export default function ChatView({ existingChatId = null }) {
 				<div
 					className="flex-1 overflow-y-auto space-y-4 px-3 md:px-10 py-3"
 				>
-					{displayedMessages.map((msg, index) => (
+					{messages.map((msg, index) => (
 						<div
 							key={index}
 							className={`chat gap-0 md:gap-1.5 ${msg.role === 'user' ? 'chat-end' : 'chat-start'}`}
@@ -282,9 +290,17 @@ export default function ChatView({ existingChatId = null }) {
 							)} */}
 
 							<div
-								className={`chat-bubble rounded-4xl whitespace-pre-wrap ${msg.role === 'user'
-									? 'bg-primary text-primary-content max-w-4/5 md:max-w-3/5'
-									: 'text-content1 max-w-4/5 md:max-w-3/5 selection:bg-yellow-400'
+								className={`chat-bubble 
+									[&>h3]:text-lg [&>h3]:text-[#719de6] [&>h3]:font-bold
+									[&>pre]:text-[#7686ff] [&>pre]:bg-[#1e1e1e] [&>pre]:overflow-auto [&>pre]:selection:bg-primary [&>pre]:selection:text-white
+									[&>code]:bg-[#2d2d2d] [&>code]:px-1 [&>code]:py-0.5 [&>code]:rounded
+									[&>ul]:list-disc [&>ul]:pl-5
+									[&>ol]:list-decimal [&>ol]:pl-5
+									
+									
+									rounded-4xl whitespace-pre-wrap ${msg.role === 'user'
+										? 'bg-primary text-primary-content max-w-4/5 md:max-w-3/5'
+										: 'text-content1 max-w-4/5 md:max-w-3/5 selection:bg-yellow-400'
 									}`}
 							>
 								<ReactMarkdown>{msg.content}</ReactMarkdown>
@@ -314,6 +330,8 @@ export default function ChatView({ existingChatId = null }) {
 							</div>
 						</div>
 					)}
+
+					<div ref={messagesEndRef} />
 				</div>
 
 				{/* Input */}

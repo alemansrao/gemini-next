@@ -34,3 +34,11 @@ body {
   content: none !important;
 }
 
+
+
+
+.chat-bubble > li {
+  /* margin-left: 1.5em; */
+  list-style-type: disc;
+}
+
