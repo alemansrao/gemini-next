@@ -2,8 +2,10 @@
 // Sidebar to browse chats
 // /components/Sidebar.jsx
 'use client';
-import { Card, CardHeader, CardBody, CardFooter, Divider, Link, Image } from "@heroui/react";
+import { Card, CardHeader, CardBody, CardFooter, Divider, Link, Image, Tooltip } from "@heroui/react";
 import { useEffect, useState } from 'react';
+import { HiOutlineDotsVertical } from "react-icons/hi";
+import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@heroui/react";
 import { listChats, deleteChat, deleteAllChats, deleteNoTitleChats } from '../lib/db';
 import { useRouter } from 'next/navigation';
 import { addToast, Button, Input, Spinner } from '@heroui/react';
@@ -27,6 +29,8 @@ export default function Sidebar({ currentChatId }) {
 	useEffect(() => {
 		load();
 		const id = setInterval(load, 1500); // lightweight polling for live updates (Dexie liveQuery alt.)
+		// Periodically clean up no-title chats
+		// deleteNoTitleChats(currentChatId);
 		return () => clearInterval(id);
 	}, []);
 
@@ -58,13 +62,16 @@ export default function Sidebar({ currentChatId }) {
 					<>
 						<Card className={`max-w-[400px] dark cursor-pointer`}>
 							<CardHeader className="flex  gap-3 justify-end">
-								<Button
+								<Tooltip color="primary" content="Delete all empty chats" className="dark"><Button
 									onPress={async () => {
-										deleteNoTitleChats();
+										deleteNoTitleChats(currentChatId);
 
 										addToast({ title: 'Deleted all empty chats', color: 'danger' });
 									}}
-									className="opacity-60 hover:opacity-100 p-1 px-3 hover:bg-zinc-200 rounded-3xl bg-zinc-700 hover:text-danger">Testing</Button>
+									className="opacity-60 hover:opacity-100 p-1 px-3 hover:bg-zinc-200 rounded-3xl bg-zinc-700 hover:text-danger">
+									Clean Up
+								</Button>
+								</Tooltip>
 								<Button
 									className="opacity-60 hover:opacity-100 p-1 px-3 hover:bg-zinc-200 rounded-3xl bg-zinc-700 hover:text-danger"
 									onPress={async () => {
@@ -76,7 +83,7 @@ export default function Sidebar({ currentChatId }) {
 											return;
 										}
 
-										await deleteAllChats();
+										await deleteAllChats(currentChatId);
 										addToast({ title: 'Deleted all chats', color: 'danger' });
 										await load();
 									}}
@@ -84,6 +91,7 @@ export default function Sidebar({ currentChatId }) {
 								>
 									Delete All <MdDelete size={18} />
 								</Button>
+
 
 							</CardHeader>
 						</Card>
@@ -94,18 +102,23 @@ export default function Sidebar({ currentChatId }) {
 										<p className="text-md">{chat.title.slice(0, 15).trim() || 'New chat'}</p>
 										<p className="text-small text-default-500">{new Date(chat.updatedAt).toLocaleString()}</p>
 									</div>
-									<Button
-										className="opacity-60 hover:opacity-100 p-1 hover:bg-zinc-200 rounded-3xl bg-zinc-700 hover:text-danger"
-										onPress={async () => {
-											await deleteChat(chat.id);
-											addToast({ title: 'Deleted', color: 'warning' });
-											load();
-											if (chat.id === currentChatId) router.push('/');
-										}}
-										title="Delete chat"
-									>
-										<MdDelete size={18} />
-									</Button>
+									{chat.id != currentChatId && (<Dropdown className="dark">
+										<DropdownTrigger>
+											<HiOutlineDotsVertical />
+										</DropdownTrigger>
+										<DropdownMenu aria-label="Static Actions" >
+											<DropdownItem key="delete" className="text-danger" color="danger"
+
+												onPress={async () => {
+													await deleteChat(chat.id);
+													addToast({ title: 'Chat deleted', color: 'danger' });
+													await load();
+												}}
+											>
+												Delete chat
+											</DropdownItem>
+										</DropdownMenu>
+									</Dropdown>)}
 								</CardHeader>
 							</Card>
 
