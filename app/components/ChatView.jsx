@@ -265,7 +265,7 @@ export default function ChatView({ existingChatId = null }) {
 								</div>
 							)}
 
-							{msg.role === 'user' && (
+							{/* {msg.role === 'user' && (
 								<div className="chat-image ml-1 avatar">
 									<div className="w-6 md:w-10 rounded-full border border-white md:p-2 p-1">
 										<img
@@ -279,7 +279,7 @@ export default function ChatView({ existingChatId = null }) {
 										/>
 									</div>
 								</div>
-							)}
+							)} */}
 
 							<div
 								className={`chat-bubble rounded-4xl whitespace-pre-wrap ${msg.role === 'user'
