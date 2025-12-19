@@ -99,7 +99,7 @@ export default function Sidebar({ currentChatId }) {
 							<Card key={chat.id} className={`max-w-[400px] dark cursor-pointer  ${chat.id === currentChatId ? 'bg-primary/20' : 'hover:bg-gray-800'}`}>
 								<CardHeader className="flex gap-3 justify-between " onClick={() => router.push(`/chat/${chat.id}`)}>
 									<div className="flex flex-col">
-										<p className="text-md">{chat.title.slice(0, 15).trim() || 'New chat'}</p>
+										<p className="text-md">{chat.title.slice(0, 25).trim() || 'New chat'}</p>
 										<p className="text-small text-default-500">{new Date(chat.updatedAt).toLocaleString()}</p>
 									</div>
 									{chat.id != currentChatId && (<Dropdown className="dark">
