@@ -1,8 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
-import { TbPrompt } from "react-icons/tb";
+import { TbPrompt,TbKeyFilled } from "react-icons/tb";
 import Image from "next/image";
-import { Input, Button, Card, addToast, Textarea } from "@heroui/react";
+import { Input, Button, Card, addToast, Textarea ,Select, SelectItem} from "@heroui/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import NavbarComponent from "../components/Navbar";
@@ -13,6 +13,12 @@ export default function SettingsPage() {
   const [systemPrompt, setSystemPrompt] = useState("");
   const [selectedModel, setSelectedModel] = useState("gemini-2.5-flash-lite"); // Default model
   const [mounted, setMounted] = useState(false);
+
+const MODELS = [
+  { key: "gemini-2.5-flash", label: "Gemini 2.5 Flash" },
+  { key: "gemini-3-flash", label: "Gemini 3 Flash" },
+  { key: "gemini-2.5-flash-lite", label: "Gemini 2.5 Flash Lite" },
+];
 
   // Load data from localStorage on mount
   useEffect(() => {
@@ -66,14 +72,6 @@ export default function SettingsPage() {
     }
   };
 
-  const handleTestPrompt = () => {
-    // Placeholder for actual prompt testing logic
-    addToast({
-      title: "Prompt Test Initiated",
-      color: "success",
-      description: "This feature is under development.",
-    });
-  };
 
   const handleClearPrompt = () => {
     setSystemPrompt("");
@@ -138,7 +136,7 @@ export default function SettingsPage() {
                   placeholder="Enter your system prompt here..."
                   value={systemPrompt}
                   onChange={handleSystemPromptChange}
-                  className="w-full h-full resize-none rounded-lg p-4 text-black"
+                  className="w-full h-full resize-none rounded-lg text-black"
                 />
               </div>
               <div className="flex flex-row gap-3">
@@ -149,19 +147,24 @@ export default function SettingsPage() {
                     description: "System prompt saved to local storage.",
                   })
                 }} className="btn-primary">Save Prompt</Button>
-                <Button onPress={handleClearPrompt} className="btn-outline">Clear Prompt</Button>
+                <Button onPress={handleClearPrompt} color="danger" className="btn-outline" disabled={!mounted}>Clear Prompt</Button>
               </div>
             </Card>
           </div>
 
           {/* API Key Settings Section (Top Card) */}
           <div className="lg:col-span-1 row-span-1">
-            <Card className="w-full bg-base-100 rounded-xl p-6">
-              <h2 className="text-2xl font-semibold mb-4">API Key Settings</h2>
-              <p className="text-sm text-base-content/60 mb-6">
-                Set your Gemini API key below. This value is stored locally in your browser.
-              </p>
-              <div className="mb-4">
+            <Card className="w-full bg-base-100 rounded-xl p-6 gap-4">
+              <div className="flex justify-between items-center">
+                <div className="flex flex-col">
+                  <h3 className="text-2xl font-semibold">Gemini API Key</h3>
+                  <p className="text-sm text-base-content/60">
+                    Manage your Gemini API key for accessing the model services.
+                  </p>
+                </div>
+                <TbKeyFilled size={32} className="text-primary" />
+              </div>
+              <div className="">
                 <label className="block text-sm font-medium mb-2">Gemini API Key</label>
                 <Input
                   placeholder="Enter Gemini API key"
@@ -170,6 +173,9 @@ export default function SettingsPage() {
                   className="w-full text-black"
                   type="password" // Mask the API key
                 />
+                <Link href="https://developers.generativeai.google/products/gemini" target="_blank" rel="noopener noreferrer" className="text-sm text-primary mt-2 inline-block">
+                  Don't have an API key? Get one here.
+                </Link>
               </div>
               <div className="flex gap-3">
                 <Button onPress={handleSaveApiKey} className="btn-primary" disabled={!mounted}>
@@ -200,7 +206,7 @@ export default function SettingsPage() {
               </div>
               <div className="flex gap-3">
                 <Button onPress={handleApplyModelConfig} className="btn-primary">Apply</Button>
-                <Button onPress={handleResetModelConfig} className="btn-outline">Reset</Button>
+                <Button onPress={handleResetModelConfig} color="danger" className="btn-outline" disabled={!mounted}>Reset</Button>
               </div>
             </Card>
           </div>

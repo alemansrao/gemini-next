@@ -9,7 +9,7 @@ import { LuClipboardPaste } from 'react-icons/lu';
 import ReactMarkdown from 'react-markdown';
 import NavbarComponent from '../components/Navbar';
 import { v4 as uuidv4 } from 'uuid';
-
+import { AnimatePresence, motion } from 'framer-motion';
 import {
 	addMessage,
 	createChat,
@@ -22,10 +22,6 @@ import {
 import Sidebar from '../components/Sidebar';
 
 import {
-	updateHasScrollbar,
-	createScrollHandler,
-	setupResizeObserver,
-	scrollToTop as helperScrollToTop,
 	DEFAULT_MESSAGES,
 	API_KEY_STORAGE_KEY,
 	MODEL_STORAGE_KEY,
@@ -244,7 +240,7 @@ export default function ChatView({ existingChatId = null }) {
 
 			{/* Main column */}
 			<div className="flex flex-col flex-1 min-w-0">
-				<NavbarComponent chattitle={chatTitle} />
+				<NavbarComponent chattitle={chatTitle} currentChatId={chatId} />
 
 				{/* Chat header (mobile) */}
 
@@ -253,27 +249,33 @@ export default function ChatView({ existingChatId = null }) {
 				<div
 					className="flex-1 overflow-y-auto space-y-4 px-3 md:px-10 py-3"
 				>
-					{messages.map((msg, index) => (
-						<div
-							key={index}
-							className={`chat gap-0 md:gap-1.5 ${msg.role === 'user' ? 'chat-end' : 'chat-start'}`}
-						>
-							{msg.role === 'model' && (
-								<div className="chat-image avatar">
-									<div className="w-6 md:w-10 rounded-full">
-										<img
-											onClick={() => {
-												navigator.clipboard.writeText(msg.content);
-												addToast({ title: 'Copied', color: 'success' });
-											}}
-											alt="assistant"
-											src="/gemini_logo.png"
-										/>
+					<AnimatePresence initial={false}>
+						{messages.map((msg, index) => (
+							<motion.div
+								key={index}
+								layout
+								initial={{ opacity: 0, y: 12 }}
+								animate={{ opacity: 1, y: 0 }}
+								exit={{ opacity: 0, y: -8 }}
+								transition={{ duration: 0.3, ease: "easeOut" }}
+								className={`chat gap-0 md:gap-1.5 ${msg.role === 'user' ? 'chat-end' : 'chat-start'}`}
+							>
+								{msg.role === 'model' && (
+									<div className="chat-image avatar">
+										<div className="w-6 md:w-10 rounded-full">
+											<img
+												onClick={() => {
+													navigator.clipboard.writeText(msg.content);
+													addToast({ title: 'Copied', color: 'success' });
+												}}
+												alt="assistant"
+												src="/gemini_logo.png"
+											/>
+										</div>
 									</div>
-								</div>
-							)}
+								)}
 
-							{/* {msg.role === 'user' && (
+								{/* {msg.role === 'user' && (
 								<div className="chat-image ml-1 avatar">
 									<div className="w-6 md:w-10 rounded-full border border-white md:p-2 p-1">
 										<img
@@ -289,8 +291,8 @@ export default function ChatView({ existingChatId = null }) {
 								</div>
 							)} */}
 
-							<div
-								className={`chat-bubble 
+								<div
+									className={`chat-bubble 
 									[&>h3]:text-lg [&>h3]:text-[#719de6] [&>h3]:font-bold
 									[&>pre]:text-[#7686ff] [&>pre]:bg-[#1e1e1e] [&>pre]:overflow-auto [&>pre]:selection:bg-primary [&>pre]:selection:text-white
 									[&>code]:bg-[#2d2d2d] [&>code]:px-1 [&>code]:py-0.5 [&>code]:rounded
@@ -299,14 +301,15 @@ export default function ChatView({ existingChatId = null }) {
 									
 									
 									rounded-4xl whitespace-pre-wrap ${msg.role === 'user'
-										? 'bg-primary text-primary-content max-w-4/5 md:max-w-3/5'
-										: 'text-content1 max-w-4/5 md:max-w-3/5 selection:bg-yellow-400'
-									}`}
-							>
-								<ReactMarkdown>{msg.content}</ReactMarkdown>
-							</div>
-						</div>
-					))}
+											? 'bg-primary text-primary-content max-w-4/5 md:max-w-3/5'
+											: 'text-content1 max-w-4/5 md:max-w-3/5 selection:bg-yellow-400'
+										}`}
+								>
+									<ReactMarkdown>{msg.content}</ReactMarkdown>
+								</div>
+							</motion.div>
+						))}
+					</AnimatePresence>
 
 					{loading && (
 						<div className="chat chat-start">

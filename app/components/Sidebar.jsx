@@ -10,6 +10,7 @@ import { listChats, deleteChat, deleteAllChats, deleteNoTitleChats } from '../li
 import { useRouter } from 'next/navigation';
 import { addToast, Button, Input, Spinner } from '@heroui/react';
 import { MdAdd, MdDelete, MdSettings } from 'react-icons/md';
+import { AnimatePresence, motion } from "framer-motion";
 
 export default function Sidebar({ currentChatId }) {
 	const router = useRouter();
@@ -65,7 +66,7 @@ export default function Sidebar({ currentChatId }) {
 								<Tooltip color="primary" content="Delete all empty chats" className="dark"><Button
 									onPress={async () => {
 										deleteNoTitleChats(currentChatId);
-
+										await load();
 										addToast({ title: 'Deleted all empty chats', color: 'danger' });
 									}}
 									className="opacity-60 hover:opacity-100 p-1 px-3 hover:bg-zinc-200 rounded-3xl bg-zinc-700 hover:text-danger">
@@ -84,8 +85,8 @@ export default function Sidebar({ currentChatId }) {
 										}
 
 										await deleteAllChats(currentChatId);
-										addToast({ title: 'Deleted all chats', color: 'danger' });
 										await load();
+										addToast({ title: 'Deleted all chats', color: 'danger' });
 									}}
 									title="Delete chat"
 								>
@@ -95,38 +96,46 @@ export default function Sidebar({ currentChatId }) {
 
 							</CardHeader>
 						</Card>
-						{filtered.map((chat) => (
-							<Card key={chat.id} className={`max-w-[400px] dark cursor-pointer rounded-none  ${chat.id === currentChatId ? 'bg-primary/20' : 'hover:bg-gray-800'}`}>
-								<CardHeader className="flex gap-3 justify-between " onClick={() => router.push(`/chat/${chat.id}`)}>
-									<div className="flex flex-col">
-										<p className="text-md">
-											{chat.title.slice(0, 25).trim() || 'New chat'}
-										</p>
-										<p className="text-gray-500 text-xs ">
-											{new Date(chat.updatedAt).toLocaleString()}
-										</p>
-									</div>
-									{chat.id != currentChatId && (<Dropdown className="dark">
-										<DropdownTrigger className="hover:bg-gray-700 rounded-full w-10 h-10">
-											<HiOutlineDotsVertical size={12} className="p-3" />
-										</DropdownTrigger>
-										<DropdownMenu aria-label="Static Actions" >
-											<DropdownItem key="delete" className="text-danger" color="danger"
+						<AnimatePresence mode="popLayout">
+							{filtered.map((chat) => (
+								<motion.div
+									key={chat.id}
+									initial={{ opacity: 0, x: -20 }}
+									animate={{ opacity: 1, x: 0 }}
+									exit={{ opacity: 0, x: -20 }}
+									transition={{ duration: 0.3 }}
+								>
+									<Card key={chat.id} className={`max-w-[400px] dark cursor-pointer rounded-none  ${chat.id === currentChatId ? 'bg-primary/20' : 'hover:bg-gray-800'}`}>
+										<CardHeader className="flex gap-3 justify-between " onClick={() => router.push(`/chat/${chat.id}`)}>
+											<div className="flex flex-col">
+												<p className="text-md">
+													{chat.title.slice(0, 25).trim() || 'New chat'}
+												</p>
+												<p className="text-gray-500 text-xs ">
+													{new Date(chat.updatedAt).toLocaleString()}
+												</p>
+											</div>
+											{chat.id != currentChatId && (<Dropdown className="dark">
+												<DropdownTrigger className="hover:bg-gray-700 rounded-full w-10 h-10">
+													<HiOutlineDotsVertical size={12} className="p-3" />
+												</DropdownTrigger>
+												<DropdownMenu aria-label="Static Actions" >
+													<DropdownItem key="delete" className="text-danger" color="danger"
 
-												onPress={async () => {
-													await deleteChat(chat.id);
-													addToast({ title: 'Chat deleted', color: 'danger' });
-													await load();
-												}}
-											>
-												Delete chat
-											</DropdownItem>
-										</DropdownMenu>
-									</Dropdown>)}
-								</CardHeader>
-							</Card>
+														onPress={async () => {
+															await deleteChat(chat.id);
+															addToast({ title: 'Chat deleted', color: 'danger' });
+															await load();
+														}}
+													>
+														Delete chat
+													</DropdownItem>
+												</DropdownMenu>
+											</Dropdown>)}
+										</CardHeader>
+									</Card></motion.div>
 
-						))}
+							))}</AnimatePresence>
 					</>
 				)}
 			</div>
